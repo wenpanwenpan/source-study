@@ -1,0 +1,79 @@
+12:44:40.222 [main] DEBUG org.apache.ibatis.logging.LogFactory - Logging initialized using 'class org.apache.ibatis.logging.slf4j.Slf4jImpl' adapter.
+12:44:40.236 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+12:44:40.237 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+12:44:40.237 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+12:44:40.237 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+12:44:40.330 [main] DEBUG org.apache.ibatis.transaction.jdbc.JdbcTransaction - Opening JDBC Connection
+12:45:11.766 [main] DEBUG org.apache.ibatis.logging.LogFactory - Logging initialized using 'class org.apache.ibatis.logging.slf4j.Slf4jImpl' adapter.
+12:45:11.803 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+12:45:11.803 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+12:45:11.803 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+12:45:11.804 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+12:48:18.495 [main] DEBUG org.apache.ibatis.transaction.jdbc.JdbcTransaction - Opening JDBC Connection
+12:49:05.365 [main] DEBUG org.apache.ibatis.logging.LogFactory - Logging initialized using 'class org.apache.ibatis.logging.slf4j.Slf4jImpl' adapter.
+12:49:05.375 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+12:49:05.375 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+12:49:05.375 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+12:49:05.375 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+12:50:39.720 [main] DEBUG org.apache.ibatis.transaction.jdbc.JdbcTransaction - Opening JDBC Connection
+12:54:13.529 [main] DEBUG org.apache.ibatis.logging.LogFactory - Logging initialized using 'class org.apache.ibatis.logging.slf4j.Slf4jImpl' adapter.
+12:54:13.547 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+12:54:13.547 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+12:54:13.548 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+12:54:13.548 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+12:54:13.666 [main] DEBUG org.apache.ibatis.transaction.jdbc.JdbcTransaction - Opening JDBC Connection
+12:54:14.126 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - Created connection 1376790324.
+12:54:14.126 [main] DEBUG org.apache.ibatis.transaction.jdbc.JdbcTransaction - Setting autocommit to false on JDBC Connection [com.mysql.jdbc.JDBC4Connection@52102734]
+12:54:14.131 [main] DEBUG o.apache.ibatis.demo.mapper.BlogMapper.selectBlog - ==>  Preparing: select * from Blog where id = 1 
+12:54:14.179 [main] DEBUG o.apache.ibatis.demo.mapper.BlogMapper.selectBlog - ==> Parameters: 
+12:54:14.218 [main] DEBUG o.apache.ibatis.demo.mapper.BlogMapper.selectBlog - <==      Total: 1
+13:09:23.638 [main] DEBUG org.apache.ibatis.logging.LogFactory - Logging initialized using 'class org.apache.ibatis.logging.slf4j.Slf4jImpl' adapter.
+13:09:23.676 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+13:09:23.676 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+13:09:23.677 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+13:09:23.677 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+13:09:26.250 [main] DEBUG org.apache.ibatis.transaction.jdbc.JdbcTransaction - Opening JDBC Connection
+13:09:26.783 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - Created connection 33233312.
+13:09:26.784 [main] DEBUG org.apache.ibatis.transaction.jdbc.JdbcTransaction - Setting autocommit to false on JDBC Connection [com.mysql.jdbc.JDBC4Connection@1fb19a0]
+13:09:26.796 [main] DEBUG o.apache.ibatis.demo.mapper.BlogMapper.selectBlog - ==>  Preparing: select * from Blog where id = 1 
+13:09:26.978 [main] DEBUG o.apache.ibatis.demo.mapper.BlogMapper.selectBlog - ==> Parameters: 
+13:09:27.136 [main] DEBUG o.apache.ibatis.demo.mapper.BlogMapper.selectBlog - <==      Total: 1
+14:57:26.332 [main] DEBUG org.apache.ibatis.logging.LogFactory - Logging initialized using 'class org.apache.ibatis.logging.slf4j.Slf4jImpl' adapter.
+14:57:26.370 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+14:57:26.370 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+14:57:26.371 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+14:57:26.371 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+16:04:50.063 [main] DEBUG org.apache.ibatis.transaction.jdbc.JdbcTransaction - Opening JDBC Connection
+16:04:50.928 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - Created connection 1221991240.
+16:04:50.930 [main] DEBUG org.apache.ibatis.transaction.jdbc.JdbcTransaction - Setting autocommit to false on JDBC Connection [com.mysql.jdbc.JDBC4Connection@48d61b48]
+16:04:50.956 [main] DEBUG o.apache.ibatis.demo.mapper.BlogMapper.selectBlog - ==>  Preparing: select * from Blog where id = 1 
+16:04:51.151 [main] DEBUG o.apache.ibatis.demo.mapper.BlogMapper.selectBlog - ==> Parameters: 
+16:04:51.390 [main] DEBUG o.apache.ibatis.demo.mapper.BlogMapper.selectBlog - <==      Total: 1
+16:10:55.800 [main] DEBUG org.apache.ibatis.logging.LogFactory - Logging initialized using 'class org.apache.ibatis.logging.slf4j.Slf4jImpl' adapter.
+16:10:55.858 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+16:10:55.859 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+16:10:55.859 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+16:10:55.860 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+16:27:58.204 [main] DEBUG org.apache.ibatis.transaction.jdbc.JdbcTransaction - Opening JDBC Connection
+16:27:58.746 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - Created connection 554868511.
+16:27:58.748 [main] DEBUG org.apache.ibatis.transaction.jdbc.JdbcTransaction - Setting autocommit to false on JDBC Connection [com.mysql.jdbc.JDBC4Connection@21129f1f]
+16:27:58.759 [main] DEBUG o.apache.ibatis.demo.mapper.BlogMapper.selectBlog - ==>  Preparing: select * from Blog where id = 1 
+16:27:58.952 [main] DEBUG o.apache.ibatis.demo.mapper.BlogMapper.selectBlog - ==> Parameters: 
+16:27:59.115 [main] DEBUG o.apache.ibatis.demo.mapper.BlogMapper.selectBlog - <==      Total: 1
+16:53:52.231 [main] DEBUG org.apache.ibatis.logging.LogFactory - Logging initialized using 'class org.apache.ibatis.logging.slf4j.Slf4jImpl' adapter.
+16:53:52.243 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+16:53:52.244 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+16:53:52.244 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+16:53:52.244 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+17:19:33.408 [main] DEBUG org.apache.ibatis.transaction.jdbc.JdbcTransaction - Opening JDBC Connection
+17:19:33.956 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - Created connection 417557780.
+17:19:33.957 [main] DEBUG org.apache.ibatis.transaction.jdbc.JdbcTransaction - Setting autocommit to false on JDBC Connection [com.mysql.jdbc.JDBC4Connection@18e36d14]
+17:19:33.969 [main] DEBUG o.apache.ibatis.demo.mapper.BlogMapper.selectBlog - ==>  Preparing: select * from Blog where id = 1 
+17:19:34.154 [main] DEBUG o.apache.ibatis.demo.mapper.BlogMapper.selectBlog - ==> Parameters: 
+17:19:34.317 [main] DEBUG o.apache.ibatis.demo.mapper.BlogMapper.selectBlog - <==      Total: 1
+17:50:18.996 [main] DEBUG org.apache.ibatis.logging.LogFactory - Logging initialized using 'class org.apache.ibatis.logging.slf4j.Slf4jImpl' adapter.
+17:50:19.036 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+17:50:19.036 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+17:50:19.037 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+17:50:19.037 [main] DEBUG o.apache.ibatis.datasource.pooled.PooledDataSource - PooledDataSource forcefully closed/removed all connections.
+18:00:40.331 [main] DEBUG org.apache.ibatis.transaction.jdbc.JdbcTransaction - Opening JDBC Connection

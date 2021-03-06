@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration status="error">
+
+    <properties>
+        <property name="LOG_HOME">logs</property>
+        <property name="FILE_NAME">thread-demo</property>
+    </properties>
+
+    <appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <!--控制台日志输出定义-->
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight{%-5level} [%t] [%X{userId}] %logger : %msg%n"/>
+        </Console>
+
+        <!--这个会打印出所有的信息，每次大小超过size，则这size大小的日志会自动存入按年份-月份建立的文件夹下面并进行压缩，作为存档-->
+        <!--
+         name：Appender名称
+        immediateFlush：log4j2接收到日志事件时，是否立即将日志刷到磁盘。默认为true。
+        fileName： 日志存储路径
+        filePattern: 历史日志封存路径，若需要压缩存放，则文件后缀写成.zip，log4j自动识别
+        -->
+        <RollingRandomAccessFile name="LogFile"
+                                 fileName="${LOG_HOME}/${FILE_NAME}.log"
+                                 filePattern="${LOG_HOME}/$${date:yyyy-MM}/${FILE_NAME}-%d{yyyy-MM-dd}-%i.log">
+
+            <!--日志输出格式-->
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%t] %logger{36} - %msg%n"/>
+
+            <Policies>
+                <!-- 每天创建一个日志文件 -->
+                <TimeBasedTriggeringPolicy interval="1"/>
+                <SizeBasedTriggeringPolicy size="500 MB"/>
+            </Policies>
+
+            <!--定时清理过期存档日志-->
+            <DefaultRolloverStrategy max="20">
+                <Delete basePath="${LOG_HOME}/$${date:yyyy-MM}/" maxDepth="2">
+                    <IfFileName glob="*.log" />
+                    <!--!Note: 这里的age必须和filePattern协调, 后者是精确到HH, 这里就要写成xH, xd就不起作用
+                    另外, 数字最好>2, 否则可能造成删除的时候, 最近的文件还处于被占用状态,导致删除不成功!-->
+                    <!--14天-->
+                    <!--<IfLastModified age="336H" />-->
+                </Delete>
+            </DefaultRolloverStrategy>
+
+            <Filters>
+                <!-- 日志文件中的显示level级别的信息 -->
+                <ThresholdFilter onMismatch="DENY" onMatch="ACCEPT" level="DEBUG"/>
+            </Filters>
+        </RollingRandomAccessFile>
+    </appenders>
+
+    <loggers>
+        <root level="info">
+            <appender-ref ref="Console"/>
+            <!-- 指向上面定义的appender中的name，日志则会输出到指定文件中 -->
+            <appender-ref ref="LogFile"/>
+        </root>
+
+        <!--设置某些包或文件的日志输出级别，避免日志文件中出现多余无用的日志，MyFile代表日志文件-->
+        <!--<logger name="org.springframework" level="WARN"/>
+        <logger name="org.apache" level="WARN"/>
+        <logger name="com.netflix" level="WARN"/>
+        <logger name="org.hibernate.validator" level="WARN"/>
+        <logger name="com.sun.jersey" level="WARN"/>
+        <logger name="org.mybatis" level="INFO"/>
+        <logger name="springfox.documentation" level="WARN"/>
+        <logger name="tk.mybatis" level="WARN"/>
+        <logger name="com.zaxxer.hikari" level="WARN"/>-->
+        <logger name="org.apache.ibatis" level="DEBUG"/>
+        <logger name="io.choerodon" level="DEBUG"/>
+        <logger name="org.hzero.platform.infra.mapper" level="DEBUG"/>
+    </loggers>
+</configuration>

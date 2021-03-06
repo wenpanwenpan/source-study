@@ -1,0 +1,19 @@
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/project-test?serverTimezone=UTC
+    username: root
+    password: wenpan
+logging:
+  # 指定日志文件的配置路径
+  config: classpath:log4j2-${logEnv:dev}.xml
+  # 指定日志存放目录，但是我们一般都使用log4j
+#  file:
+#    path: /logs/
+  level:
+    com.wp.thread.mapper: debug
+
+# 服务端口
+server:
+  port: 8888
+

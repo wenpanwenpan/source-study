@@ -2,7 +2,13 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/juc-study/aqs-study/aqs-study.iml" filepath="$PROJECT_DIR$/juc-study/aqs-study/aqs-study.iml" />
+      <module fileurl="file://$PROJECT_DIR$/demo-thread/demo-thread.iml" filepath="$PROJECT_DIR$/demo-thread/demo-thread.iml" />
+      <module fileurl="file://$PROJECT_DIR$/mybatis/mybatis/mybatis.iml" filepath="$PROJECT_DIR$/mybatis/mybatis/mybatis.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/source-study.iml" filepath="$PROJECT_DIR$/.idea/source-study.iml" />
+      <module fileurl="file://$PROJECT_DIR$/spring-combine-mybatis/spring-combine-mybatis.iml" filepath="$PROJECT_DIR$/spring-combine-mybatis/spring-combine-mybatis.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/spring-framework.iml" filepath="$PROJECT_DIR$/.idea/modules/spring-framework.iml" />
+      <module fileurl="file://$PROJECT_DIR$/study-base-source/study-base-source.iml" filepath="$PROJECT_DIR$/study-base-source/study-base-source.iml" />
     </modules>
   </component>
 </project>

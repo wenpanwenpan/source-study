@@ -136,10 +136,10 @@ public class AtomicStampedReference<V> {
      * current reference is {@code ==} to the expected reference
      * and the current stamp is equal to the expected stamp.
      *
-     * @param expectedReference the expected value of the reference
-     * @param newReference the new value for the reference
-     * @param expectedStamp the expected value of the stamp
-     * @param newStamp the new value for the stamp
+     * @param expectedReference the expected value of the reference 期望的引用
+     * @param newReference the new value for the reference          新值的引用
+     * @param expectedStamp the expected value of the stamp         期望的时间戳
+     * @param newStamp the new value for the stamp                  新值的时间戳
      * @return {@code true} if successful
      */
     public boolean compareAndSet(V   expectedReference,
@@ -148,8 +148,8 @@ public class AtomicStampedReference<V> {
                                  int newStamp) {
         Pair<V> current = pair;
         return
-            expectedReference == current.reference &&
-            expectedStamp == current.stamp &&
+            expectedReference == current.reference && // 期望引用与当前引用一致
+            expectedStamp == current.stamp && // 期望版本与当前版本一致
             ((newReference == current.reference &&
               newStamp == current.stamp) ||
              casPair(current, Pair.of(newReference, newStamp)));
@@ -195,6 +195,7 @@ public class AtomicStampedReference<V> {
         objectFieldOffset(UNSAFE, "pair", AtomicStampedReference.class);
 
     private boolean casPair(Pair<V> cmp, Pair<V> val) {
+        // 仍然是调用的 UNSAFE.compareAndSwapObject
         return UNSAFE.compareAndSwapObject(this, pairOffset, cmp, val);
     }
 

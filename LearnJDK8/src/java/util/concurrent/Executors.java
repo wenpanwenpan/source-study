@@ -400,10 +400,13 @@ public class Executors {
      * @param <T> the type of the result
      * @return a callable object
      * @throws NullPointerException if task null
+     *
+     * 将 Runnable 接口进行包装，适配为 callable
      */
     public static <T> Callable<T> callable(Runnable task, T result) {
         if (task == null)
             throw new NullPointerException();
+        // 将 Runnable 接口进行包装，适配为 callable
         return new RunnableAdapter<T>(task, result);
     }
 
@@ -413,6 +416,8 @@ public class Executors {
      * @param task the task to run
      * @return a callable object
      * @throws NullPointerException if task null
+     *
+     * 将 Runnable 接口进行包装，适配为 callable
      */
     public static Callable<Object> callable(Runnable task) {
         if (task == null)
@@ -499,6 +504,7 @@ public class Executors {
 
     /**
      * A callable that runs given task and returns given result
+     * Runnable 接口适配器，实现了 Callable 接口。将 Runnable 适配为 Callable
      */
     static final class RunnableAdapter<T> implements Callable<T> {
         final Runnable task;
@@ -508,7 +514,9 @@ public class Executors {
             this.result = result;
         }
         public T call() {
+            // 在call方法里调用 runnable的run方法。适配
             task.run();
+            // 直接将传递过来的 result 返回给你，不做任何处理
             return result;
         }
     }

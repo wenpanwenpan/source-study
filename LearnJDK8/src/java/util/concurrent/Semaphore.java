@@ -174,22 +174,37 @@ public class Semaphore implements java.io.Serializable {
             return getState();
         }
 
+        /**
+         * @param acquires 要获取的许可数量
+         * @date: 2021/6/17 11:30 上午
+         * @author: Mr_wenpan@163.com
+         */
         final int nonfairTryAcquireShared(int acquires) {
             for (;;) {
+                // 获取到可用的许可数
                 int available = getState();
+                // 剩余的许可 = 可用的许可数 - 要获取的许可数量
                 int remaining = available - acquires;
-                if (remaining < 0 ||
-                    compareAndSetState(available, remaining))
+                // 如果 剩余的许可 < 0，或通过cas获取许可失败了，则返回remaining
+                // 如果许可已经用完, 返回负数, 表示获取失败, 进入 doAcquireSharedInterruptibly
+                // 如果 cas 重试成功, 返回正数, 表示获取成功
+                if (remaining < 0 || compareAndSetState(available, remaining))
                     return remaining;
             }
         }
 
+        /**
+         * 释放许可
+         */
         protected final boolean tryReleaseShared(int releases) {
             for (;;) {
+                // 获取AQS中的state
                 int current = getState();
                 int next = current + releases;
+                // next < current 溢出了
                 if (next < current) // overflow
                     throw new Error("Maximum permit count exceeded");
+                // 通过cas的方式设置state的值为next
                 if (compareAndSetState(current, next))
                     return true;
             }
@@ -216,7 +231,7 @@ public class Semaphore implements java.io.Serializable {
     }
 
     /**
-     * NonFair version
+     * NonFair version，非公平同步器
      */
     static final class NonfairSync extends Sync {
         private static final long serialVersionUID = -2694183684443567898L;
@@ -225,6 +240,9 @@ public class Semaphore implements java.io.Serializable {
             super(permits);
         }
 
+        /**
+         *尝试获取许可,负数表示获取许可失败，整数表示获取许可成功
+         */
         protected int tryAcquireShared(int acquires) {
             return nonfairTryAcquireShared(acquires);
         }
@@ -309,6 +327,7 @@ public class Semaphore implements java.io.Serializable {
      * @throws InterruptedException if the current thread is interrupted
      */
     public void acquire() throws InterruptedException {
+        // 调用AQS同步器的获取许可的方法，获取一个许可
         sync.acquireSharedInterruptibly(1);
     }
 
@@ -421,8 +440,10 @@ public class Semaphore implements java.io.Serializable {
      * have acquired that permit by calling {@link #acquire}.
      * Correct usage of a semaphore is established by programming convention
      * in the application.
+     * 释放许可
      */
     public void release() {
+        // 释放一个许可
         sync.releaseShared(1);
     }
 

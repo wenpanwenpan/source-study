@@ -637,7 +637,9 @@ public abstract class AbstractQueuedSynchronizer
         // 如果尾节点不等于空
         // 尝试快速入队
         if (pred != null) {
-            // 将当前节点的prev指向尾节点
+            // 将当前节点的prev指向尾节点，这里有可能多个node的prev指针都指向了这个最后的节点
+            // 如何解决呢？其实就是通过下面的 compareAndSetTail(pred, node) 原子操作，将AQS的tail指针指向这后面的多个节点中的一个
+            // 这里用cas保证只有一个节点能被指向.其他没有被指向的线程节点就会去执行下面的自旋入队逻辑 enq(node);
             node.prev = pred;
             // 通过cas的方式将尾节点的下一个节点next指向当前节点
             if (compareAndSetTail(pred, node)) {
@@ -679,6 +681,7 @@ public abstract class AbstractQueuedSynchronizer
          */
         int ws = node.waitStatus;
         if (ws < 0)
+            // 将自己的waitStatus通过cas的方式改变为0
             compareAndSetWaitStatus(node, ws, 0);
 
         /*
@@ -690,10 +693,12 @@ public abstract class AbstractQueuedSynchronizer
         Node s = node.next;
         if (s == null || s.waitStatus > 0) {
             s = null;
+            // 从尾节点tail依次向前找到waitStatus <= 0的节点，并将该节点赋值给s
             for (Node t = tail; t != null && t != node; t = t.prev)
                 if (t.waitStatus <= 0)
                     s = t;
         }
+        // 如果找到了，则将他唤醒
         if (s != null)
             LockSupport.unpark(s.thread);
     }
@@ -716,12 +721,16 @@ public abstract class AbstractQueuedSynchronizer
          * fails, if so rechecking.
          */
         for (;;) {
+            // 获取头节点
             Node h = head;
             if (h != null && h != tail) {
                 int ws = h.waitStatus;
+                // 如果h节点的waitStatus = -1，则说明该节点有义务唤醒他后面的节点
                 if (ws == Node.SIGNAL) {
+                    // 将h节点自己的waitStatus由 -1 改变为 0，0说明自己是正常状态，并且没有义务去唤醒后续节点
                     if (!compareAndSetWaitStatus(h, Node.SIGNAL, 0))
                         continue;            // loop to recheck cases
+                    // 唤醒后续的节点
                     unparkSuccessor(h);
                 }
                 else if (ws == 0 &&
@@ -737,12 +746,13 @@ public abstract class AbstractQueuedSynchronizer
      * Sets head of queue, and checks if successor may be waiting
      * in shared mode, if so propagating if either propagate > 0 or
      * PROPAGATE status was set.
-     *
+     *  将node节点设置为头节点并且传播，propagate = 0则不会继续传播
      * @param node the node
      * @param propagate the return value from a tryAcquireShared
      */
     private void setHeadAndPropagate(Node node, int propagate) {
         Node h = head; // Record old head for check below
+        // 将node节点设置为头节点
         setHead(node);
         /*
          * Try to signal next queued node if:
@@ -764,6 +774,7 @@ public abstract class AbstractQueuedSynchronizer
             (h = head) == null || h.waitStatus < 0) {
             Node s = node.next;
             if (s == null || s.isShared())
+                //
                 doReleaseShared();
         }
     }
@@ -877,6 +888,7 @@ public abstract class AbstractQueuedSynchronizer
      * Convenience method to park and then check if interrupted
      *
      * @return {@code true} if interrupted
+     * park当前线程
      */
     private final boolean parkAndCheckInterrupt() {
         LockSupport.park(this);
@@ -1039,26 +1051,38 @@ public abstract class AbstractQueuedSynchronizer
      */
     private void doAcquireSharedInterruptibly(int arg)
         throws InterruptedException {
+        // 将当前线程添加到等待队列尾部
         final Node node = addWaiter(Node.SHARED);
         boolean failed = true;
         try {
             for (;;) {
+                // 获取到该节点的前驱节点
                 final Node p = node.predecessor();
+                // 如果前驱节点是头节点，则说明自己是第二个节点
                 if (p == head) {
+                    // 那么就再次去尝试获取许可
                     int r = tryAcquireShared(arg);
+                    // r >= 0表示获取许可成功
                     if (r >= 0) {
+                        // 成功后本线程出队(AQS), 所在 Node 设置为 head
+                        // 如果 head.waitStatus == Node.SIGNAL ==> 0 成功, 下一个节点 unpark
+                        // 如果 head.waitStatus == 0 ==> Node.PROPAGATE
+                        // r 表示可用资源数, 为 0 则不会继续传播
                         setHeadAndPropagate(node, r);
                         p.next = null; // help GC
                         failed = false;
                         return;
                     }
                 }
-                if (shouldParkAfterFailedAcquire(p, node) &&
-                    parkAndCheckInterrupt())
+                // 当获取许可失败的时候，是否应该被park
+                // 不成功, 设置上一个节点 waitStatus = Node.SIGNAL, 下轮进入 park 阻塞
+                if (shouldParkAfterFailedAcquire(p, node) && parkAndCheckInterrupt())
                     throw new InterruptedException();
             }
         } finally {
+            // failed = false说明已经获取到许可了
             if (failed)
+                // 取消该线程再次尝试获取许可的资格
                 cancelAcquire(node);
         }
     }
@@ -1357,13 +1381,17 @@ public abstract class AbstractQueuedSynchronizer
      * This value is conveyed to {@link #tryAcquireShared} but is
      * otherwise uninterpreted and can represent anything
      * you like.
+     *            带中断响应的共享锁（许可）获取方法
      * @throws InterruptedException if the current thread is interrupted
      */
     public final void acquireSharedInterruptibly(int arg)
             throws InterruptedException {
+        // 如果该线程被中断过，则抛出中断异常
         if (Thread.interrupted())
             throw new InterruptedException();
+        // 否则尝试获取共享锁（许可），小于0则说明获取失败，反之则获取成功
         if (tryAcquireShared(arg) < 0)
+            // 获取共享锁失败了，则添加到等待队列中
             doAcquireSharedInterruptibly(arg);
     }
 
@@ -1399,8 +1427,10 @@ public abstract class AbstractQueuedSynchronizer
      *        {@link #tryReleaseShared} but is otherwise uninterpreted
      *        and can represent anything you like.
      * @return the value returned from {@link #tryReleaseShared}
+     * 释放许可
      */
     public final boolean releaseShared(int arg) {
+        // 尝试释放共享锁，由具体子类实现
         if (tryReleaseShared(arg)) {
             doReleaseShared();
             return true;

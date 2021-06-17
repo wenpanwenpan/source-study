@@ -123,6 +123,7 @@ public interface Future<V> {
      * normally.
      *
      * @return {@code true} if this task was cancelled before it completed
+     * 是否被取消
      */
     boolean isCancelled();
 
@@ -147,6 +148,7 @@ public interface Future<V> {
      * exception
      * @throws InterruptedException if the current thread was interrupted
      * while waiting
+     * 获取任务执行返回值
      */
     V get() throws InterruptedException, ExecutionException;
 
@@ -163,6 +165,7 @@ public interface Future<V> {
      * @throws InterruptedException if the current thread was interrupted
      * while waiting
      * @throws TimeoutException if the wait timed out
+     * 获取任务执行返回值（带时间）
      */
     V get(long timeout, TimeUnit unit)
         throws InterruptedException, ExecutionException, TimeoutException;

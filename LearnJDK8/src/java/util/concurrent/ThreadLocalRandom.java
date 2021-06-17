@@ -207,7 +207,9 @@ public class ThreadLocalRandom extends Random {
         int p = probeGenerator.addAndGet(PROBE_INCREMENT);
         int probe = (p == 0) ? 1 : p; // skip 0
         long seed = mix64(seeder.getAndAdd(SEEDER_INCREMENT));
+        // 当前线程
         Thread t = Thread.currentThread();
+        // 设置hash种子
         UNSAFE.putLong(t, SEED, seed);
         UNSAFE.putInt(t, PROBE, probe);
     }

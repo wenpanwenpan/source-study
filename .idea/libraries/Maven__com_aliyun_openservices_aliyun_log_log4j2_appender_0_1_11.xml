@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: com.aliyun.openservices:aliyun-log-log4j2-appender:0.1.11">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/aliyun/openservices/aliyun-log-log4j2-appender/0.1.11/aliyun-log-log4j2-appender-0.1.11.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/com/aliyun/openservices/aliyun-log-log4j2-appender/0.1.11/aliyun-log-log4j2-appender-0.1.11-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/aliyun/openservices/aliyun-log-log4j2-appender/0.1.11/aliyun-log-log4j2-appender-0.1.11-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

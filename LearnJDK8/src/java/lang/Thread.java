@@ -160,6 +160,7 @@ class Thread implements Runnable {
     private boolean     stillborn = false;
 
     /* What will be run. */
+    // 封装了咱们自己的业务逻辑方法的入口（runnable.run()）
     private Runnable target;
 
     /* The group of this thread */
@@ -243,16 +244,19 @@ class Thread implements Runnable {
 
     /**
      * The minimum priority that a thread can have.
+     * 线程最小优先级
      */
     public final static int MIN_PRIORITY = 1;
 
    /**
      * The default priority that is assigned to a thread.
+    * 线程默认优先级
      */
     public final static int NORM_PRIORITY = 5;
 
     /**
      * The maximum priority that a thread can have.
+     * 线程最高优先级
      */
     public final static int MAX_PRIORITY = 10;
 
@@ -260,6 +264,7 @@ class Thread implements Runnable {
      * Returns a reference to the currently executing thread object.
      *
      * @return  the currently executing thread.
+     * native方法，从操作系统获取当前线程
      */
     public static native Thread currentThread();
 
@@ -336,7 +341,7 @@ class Thread implements Runnable {
         if (nanos >= 500000 || (nanos != 0 && millis == 0)) {
             millis++;
         }
-
+        // 调用native方法实现线程沉睡
         sleep(millis);
     }
 
@@ -714,6 +719,7 @@ class Thread implements Runnable {
 
         boolean started = false;
         try {
+            // 调用native方法（由c++实现），向操作系统申请一个线程执行任务
             start0();
             started = true;
         } finally {
@@ -744,6 +750,7 @@ class Thread implements Runnable {
      */
     @Override
     public void run() {
+        // 如果我们new thread的时候传递的runnable不为空，则直接执行我们传递的runnable的run方法
         if (target != null) {
             target.run();
         }

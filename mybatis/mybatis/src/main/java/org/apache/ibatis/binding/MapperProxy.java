@@ -82,6 +82,8 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
 
   // 代理以后，所有Mapper的方法调用时，都会调用这个invoke方法
   // 并不是任何一个方法都需要执行调用代理对象进行执行，如果这个方法是Object中通用的方法（toString、hashCode等）无需执行
+  // 这里mybatis的mapper接口创建代理对象的时候使用的是投鞭断流的方式，MapperProxy类既是拦截器又是目标类，在作为拦截器拦截到目标方法调用的同时，
+  // 在invoke里调用的目标方法其实就 自己（MapperProxy）中的方法
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     try {

@@ -84,6 +84,7 @@ public abstract class AbstractExecutorService implements ExecutorService {
      * @since 1.6
      */
     protected <T> RunnableFuture<T> newTaskFor(Runnable runnable, T value) {
+        // 将 Runnable 适配为 callable，并且将提交的Runnable任务封装为 FutureTask
         return new FutureTask<T>(runnable, value);
     }
 
@@ -99,39 +100,51 @@ public abstract class AbstractExecutorService implements ExecutorService {
      * @since 1.6
      */
     protected <T> RunnableFuture<T> newTaskFor(Callable<T> callable) {
+        // 将 callable 封装为一个 FutureTask
         return new FutureTask<T>(callable);
     }
 
     /**
      * @throws RejectedExecutionException {@inheritDoc}
      * @throws NullPointerException       {@inheritDoc}
+     * 提交任务到线程池
      */
     public Future<?> submit(Runnable task) {
         if (task == null) throw new NullPointerException();
+        // 提交到线程池的时候会将 Runnable 任务封装为一个 FutureTask
         RunnableFuture<Void> ftask = newTaskFor(task, null);
+        // 执行
         execute(ftask);
+        // 返回 Future ，可通过 Future.get到线程执行后的返回值(这里的返回值就是 null )
         return ftask;
     }
 
     /**
      * @throws RejectedExecutionException {@inheritDoc}
      * @throws NullPointerException       {@inheritDoc}
+     * 提交任务到线程池
      */
     public <T> Future<T> submit(Runnable task, T result) {
         if (task == null) throw new NullPointerException();
+        // 提交到线程池的时候会将 Runnable 任务封装为一个 FutureTask
         RunnableFuture<T> ftask = newTaskFor(task, result);
+        // 执行
         execute(ftask);
+        // 返回 Future ，可通过 Future.get到线程执行后的返回值(这里的返回值就是传进来的 result )
         return ftask;
     }
 
     /**
      * @throws RejectedExecutionException {@inheritDoc}
      * @throws NullPointerException       {@inheritDoc}
+     * 提交任务到线程池
      */
     public <T> Future<T> submit(Callable<T> task) {
         if (task == null) throw new NullPointerException();
+        // 提交到线程池的时候会将 Callable 任务封装为一个 FutureTask
         RunnableFuture<T> ftask = newTaskFor(task);
         execute(ftask);
+        // 返回 Future ，可通过 Future.get到线程执行后的返回值
         return ftask;
     }
 
@@ -225,6 +238,9 @@ public abstract class AbstractExecutorService implements ExecutorService {
         return doInvokeAny(tasks, true, unit.toNanos(timeout));
     }
 
+    /**
+     * 批量提交任务执行（不带超时时间）
+     */
     public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks)
         throws InterruptedException {
         if (tasks == null)
@@ -256,6 +272,9 @@ public abstract class AbstractExecutorService implements ExecutorService {
         }
     }
 
+    /**
+     * 批量提交任务执行（带超时时间）
+     */
     public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks,
                                          long timeout, TimeUnit unit)
         throws InterruptedException {
@@ -266,6 +285,7 @@ public abstract class AbstractExecutorService implements ExecutorService {
         boolean done = false;
         try {
             for (Callable<T> t : tasks)
+                // 将 callable 封装为 FutureTask并添加到 futures 集合中
                 futures.add(newTaskFor(t));
 
             final long deadline = System.nanoTime() + nanos;

@@ -110,6 +110,7 @@ public class LinkedBlockingDeque<E>
     static final class Node<E> {
         /**
          * The item, or null if this node has been removed.
+         * 节点数据
          */
         E item;
 
@@ -118,6 +119,10 @@ public class LinkedBlockingDeque<E>
          * - the real predecessor Node
          * - this Node, meaning the predecessor is tail
          * - null, meaning there is no predecessor
+         * 下列三种情况之一
+         * - 真正的后继节点
+         * - 自己, 发生在出队时
+         * - null, 表示是没有前驱节点, 是最前了
          */
         Node<E> prev;
 
@@ -126,6 +131,10 @@ public class LinkedBlockingDeque<E>
          * - the real successor Node
          * - this Node, meaning the successor is head
          * - null, meaning there is no successor
+         * 下列三种情况之一
+         * - 真正的后继节点
+         * - 自己, 发生在出队时
+         * - null, 表示是没有后继节点, 是最后了
          */
         Node<E> next;
 
@@ -138,6 +147,7 @@ public class LinkedBlockingDeque<E>
      * Pointer to first node.
      * Invariant: (first == null && last == null) ||
      *            (first.prev == null && first.item != null)
+     *            指向第一个节点
      */
     transient Node<E> first;
 
@@ -148,16 +158,19 @@ public class LinkedBlockingDeque<E>
      */
     transient Node<E> last;
 
-    /** Number of items in the deque */
+    /** Number of items in the deque 队列中元素的数量*/
     private transient int count;
 
     /** Maximum number of items in the deque */
     private final int capacity;
 
-    /** Main lock guarding all access */
+    /***
+     *  Main lock guarding all access
+     *  锁，在添加和获取的时候加锁处理
+     */
     final ReentrantLock lock = new ReentrantLock();
 
-    /** Condition for waiting takes */
+    /** Condition for waiting takes，等待获取元素的线程的休息室 */
     private final Condition notEmpty = lock.newCondition();
 
     /** Condition for waiting puts */
@@ -168,6 +181,7 @@ public class LinkedBlockingDeque<E>
      * {@link Integer#MAX_VALUE}.
      */
     public LinkedBlockingDeque() {
+        // 默认int的最大值，可以自己指定大小
         this(Integer.MAX_VALUE);
     }
 
@@ -232,35 +246,50 @@ public class LinkedBlockingDeque<E>
 
     /**
      * Links node as last element, or returns false if full.
+     * 该方法在调用的时候都是加锁保护的，所以不存在线程安全问题
      */
     private boolean linkLast(Node<E> node) {
         // assert lock.isHeldByCurrentThread();
+        // 超出队列容量了
         if (count >= capacity)
             return false;
+        // 获取到最尾部的节点
         Node<E> l = last;
+        // 要添加的节点的前指针指向最后一个节点
         node.prev = l;
+        // 尾指针指向待添加的节点
         last = node;
+        // 如果此时链表上第一个节点为空，则将该节点作为第一个节点
         if (first == null)
             first = node;
         else
+            // 否则，将原来的尾部节点的next指针指向该节点
             l.next = node;
+        // 将队列中元素的数量++
         ++count;
+        // 唤醒等待take元素的线程
         notEmpty.signal();
         return true;
     }
 
     /**
      * Removes and returns first element, or null if empty.
+     * 删除并返回第一个元素
      */
     private E unlinkFirst() {
         // assert lock.isHeldByCurrentThread();
         Node<E> f = first;
         if (f == null)
             return null;
+        // 链表头的下一个元素
         Node<E> n = f.next;
+        // 将first节点的value保存到item上
         E item = f.item;
+        // 将first节点的value置为空（help GC）
         f.item = null;
+        // 自己指向自己，方便垃圾回收
         f.next = f; // help GC
+        // 将原链表头的下一个元素设置为first
         first = n;
         if (n == null)
             last = null;
@@ -273,6 +302,7 @@ public class LinkedBlockingDeque<E>
 
     /**
      * Removes and returns last element, or null if empty.
+     * 删除并返回最后一个元素
      */
     private E unlinkLast() {
         // assert lock.isHeldByCurrentThread();
@@ -300,6 +330,9 @@ public class LinkedBlockingDeque<E>
         // assert lock.isHeldByCurrentThread();
         Node<E> p = x.prev;
         Node<E> n = x.next;
+        // 如果x节点的前置节点为空则返回并删除第一个
+        // 如果x节点的后置节点为空则返回并删除最后一个
+        // 如果前置节点和后节点都不为空，则删除自己
         if (p == null) {
             unlinkFirst();
         } else if (n == null) {
@@ -329,8 +362,10 @@ public class LinkedBlockingDeque<E>
     /**
      * @throws IllegalStateException if this deque is full
      * @throws NullPointerException  {@inheritDoc}
+     * 加锁，添加到链表的尾部
      */
     public void addLast(E e) {
+        // 加锁，添加到链表的尾部，如果添加失败了则抛出异常
         if (!offerLast(e))
             throw new IllegalStateException("Deque full");
     }
@@ -352,13 +387,16 @@ public class LinkedBlockingDeque<E>
 
     /**
      * @throws NullPointerException {@inheritDoc}
+     * 加锁，添加到链表的尾部
      */
     public boolean offerLast(E e) {
+        // 不能添加空元素
         if (e == null) throw new NullPointerException();
         Node<E> node = new Node<E>(e);
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
+            // 添加到尾部
             return linkLast(node);
         } finally {
             lock.unlock();
@@ -430,13 +468,16 @@ public class LinkedBlockingDeque<E>
         throws InterruptedException {
         if (e == null) throw new NullPointerException();
         Node<E> node = new Node<E>(e);
+        // 时间统一转换为纳秒
         long nanos = unit.toNanos(timeout);
         final ReentrantLock lock = this.lock;
+        // 获取锁，如果没有获取到锁，则进入AQS的休息室等待
         lock.lockInterruptibly();
         try {
             while (!linkLast(node)) {
                 if (nanos <= 0)
                     return false;
+                // 添加失败了，并且还没到超时时间，则进入休息室等待
                 nanos = notFull.awaitNanos(nanos);
             }
             return true;
@@ -519,6 +560,7 @@ public class LinkedBlockingDeque<E>
             while ( (x = unlinkFirst()) == null) {
                 if (nanos <= 0)
                     return null;
+                // 这里这么处理等待时间是因为防止被中断或虚假唤醒后，导致等待时间比原来的时间长的问题
                 nanos = notEmpty.awaitNanos(nanos);
             }
             return x;
@@ -564,6 +606,7 @@ public class LinkedBlockingDeque<E>
     }
 
     public E peekFirst() {
+        // 从队列中获取一个元素（获取第一个），需要加锁
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
@@ -636,6 +679,7 @@ public class LinkedBlockingDeque<E>
 
     /**
      * @throws NullPointerException if the specified element is null
+     * 添加元素到队列，和上面的add调用的同一个方法
      */
     public boolean offer(E e) {
         return offerLast(e);
@@ -644,6 +688,7 @@ public class LinkedBlockingDeque<E>
     /**
      * @throws NullPointerException {@inheritDoc}
      * @throws InterruptedException {@inheritDoc}
+     * 添加元素到队列，内部调用和上面两个方法一样
      */
     public void put(E e) throws InterruptedException {
         putLast(e);
@@ -652,6 +697,7 @@ public class LinkedBlockingDeque<E>
     /**
      * @throws NullPointerException {@inheritDoc}
      * @throws InterruptedException {@inheritDoc}
+     * 带超时时间的添加，如果到了超时时间还没有获取到锁或还没添加成功，则直接返回false，不再等待
      */
     public boolean offer(E e, long timeout, TimeUnit unit)
         throws InterruptedException {
@@ -673,6 +719,7 @@ public class LinkedBlockingDeque<E>
     }
 
     public E poll() {
+        // 从队列中获取一个元素（获取第一个），获取到元素后需要删除该节点
         return pollFirst();
     }
 

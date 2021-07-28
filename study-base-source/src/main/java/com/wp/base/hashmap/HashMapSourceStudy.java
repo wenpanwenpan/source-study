@@ -1,6 +1,7 @@
 package com.wp.base.hashmap;
 
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @description: hashmap源码学习

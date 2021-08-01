@@ -178,18 +178,24 @@ public class CommandAsyncService implements CommandAsyncExecutor {
 
     @Override
     public <V> V get(RFuture<V> future) {
+        // 任务还没完成
         if (!future.isDone()) {
+            // 设置一个单线程的同步控制器
             final CountDownLatch l = new CountDownLatch(1);
+            // 添加一个监听器，当任务完成时调用监听器的operationComplete方法
             future.addListener(new FutureListener<V>() {
                 @Override
                 public void operationComplete(Future<V> future) throws Exception {
+                    // 操作完成时，唤醒在await()方法中等待的线程
                     l.countDown();
                 }
             });
 
             boolean interrupted = false;
+            // 任务还没完成
             while (!future.isDone()) {
                 try {
+                    // 在这里等待，等待任务执行完成后回调监听器中的operationComplete方法唤醒
                     l.await();
                 } catch (InterruptedException e) {
                     interrupted = true;
@@ -197,6 +203,7 @@ public class CommandAsyncService implements CommandAsyncExecutor {
                 }
             }
 
+            // 如果等待的线程是被中断而退出的while循环，则将该线程的中断标记设置为true，以便上层感知中断
             if (interrupted) {
                 Thread.currentThread().interrupt();
             }
@@ -204,22 +211,30 @@ public class CommandAsyncService implements CommandAsyncExecutor {
 
         // commented out due to blocking issues up to 200 ms per minute for each thread
         // future.awaitUninterruptibly();
+        // 任务成功完成
         if (future.isSuccess()) {
             return future.getNow();
         }
 
+        // 转换异常
         throw convertException(future);
     }
 
     @Override
     public boolean await(RFuture<?> future, long timeout, TimeUnit timeoutUnit) throws InterruptedException {
+        // 创建一个门栓
         final CountDownLatch l = new CountDownLatch(1);
+        // 当订阅的锁被释放后会吊起这个监听方法，在监听方法内部将门栓数量减一
         future.addListener(new FutureListener<Object>() {
             @Override
             public void operationComplete(Future<Object> future) throws Exception {
+                // 监听方法被吊起，门栓数量减一
                 l.countDown();
             }
         });
+        // 在这里等待门栓数量为0，或超时时间到了再继续运行
+        // 在等待时间内如果订阅的锁已经释放，监听方法会被吊起门栓数量为0，则这里返回true
+        // 如果等待时间已经耗完了，订阅的锁还没被释放的话，则这里返回false
         return l.await(timeout, timeoutUnit);
     }
     

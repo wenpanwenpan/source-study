@@ -130,7 +130,9 @@ public class RedissonLock extends RedissonExpirable implements RLock {
         }
     }
 
-
+    /**
+     * 可中断的获取锁
+     */
     @Override
     public void lockInterruptibly() throws InterruptedException {
         lockInterruptibly(-1, null);
@@ -182,6 +184,8 @@ public class RedissonLock extends RedissonExpirable implements RLock {
      * 尝试获取锁，如果没有获取到锁则返回该锁还剩余多少毫秒过期，如果获取到了锁，则返回空
      */
     private Long tryAcquire(long leaseTime, TimeUnit unit, long threadId) {
+        // tryAcquireAsync方法返回一个RFuture<Long>类型，get方法主要就是取得RFuture中的数值
+        // 该数值就是该锁还剩余的过期时间（如果为空，则表示已经获取到锁了，反之则表示该锁还剩多久过期）
         return get(tryAcquireAsync(leaseTime, unit, threadId));
     }
     
@@ -208,23 +212,28 @@ public class RedissonLock extends RedissonExpirable implements RLock {
     }
 
     private <T> RFuture<Long> tryAcquireAsync(long leaseTime, TimeUnit unit, final long threadId) {
+        // 1、如果有设置锁过期时间
         if (leaseTime != -1) {
+            // 调用tryLockInnerAsync，通过lua脚本去加锁
             return tryLockInnerAsync(leaseTime, unit, threadId, RedisCommands.EVAL_LONG);
         }
-        // 如果获取锁时没有传递锁过期时间，则这里会给个默认过期时间30s
+        // 2、如果获取锁时没有传递锁过期时间，则这里会给个默认过期时间30s（通过执行lua脚本去获取锁）
         RFuture<Long> ttlRemainingFuture = tryLockInnerAsync(commandExecutor.getConnectionManager().getCfg().getLockWatchdogTimeout(), TimeUnit.MILLISECONDS, threadId, RedisCommands.EVAL_LONG);
+        // 3、给获取锁的操作添加一个监听，当获取锁的操作返回时（不管成功还是失败），立即调用监听方法
         ttlRemainingFuture.addListener(new FutureListener<Long>() {
+            // 当获取锁的操作执行结束时，该方法被吊起
             @Override
             public void operationComplete(Future<Long> future) throws Exception {
-                // 如果获取锁没有成功，则直接返回
+                // 3.1、如果获取锁失败，则直接返回
                 if (!future.isSuccess()) {
                     return;
                 }
 
                 Long ttlRemaining = future.getNow();
                 // lock acquired
+                // ttlRemaining == null 则说明获取锁成功
                 if (ttlRemaining == null) {
-                    // 如果获取锁成功了，则开启定时任务去定时延长锁过期时间（看门狗）
+                    // 3.2、如果获取锁成功了，则开启定时任务去定时延长锁过期时间（看门狗）
                     scheduleExpirationRenewal(threadId);
                 }
             }
@@ -330,20 +339,22 @@ public class RedissonLock extends RedissonExpirable implements RLock {
      */
     @Override
     public boolean tryLock(long waitTime, long leaseTime, TimeUnit unit) throws InterruptedException {
+        // 1、将等待时间转换为毫秒、、获取当前时间、获取当前线程ID
         long time = unit.toMillis(waitTime);
         long current = System.currentTimeMillis();
         final long threadId = Thread.currentThread().getId();
-        // 尝试去获取锁
+        // 2、尝试申请锁，返回还剩余的锁过期时间
         Long ttl = tryAcquire(leaseTime, unit, threadId);
-        // 获取锁成功则直接返回true
+        // 3、ttl==null 表示获取锁成功则直接返回true
         // lock acquired
         if (ttl == null) {
             return true;
         }
 
-        // 获取还需要等待的时间
+        // 4、获取还需要等待的时间，且根据还需等待的时间（time）判断是否获取锁失败
         time -= (System.currentTimeMillis() - current);
         // 如果还需要等待的时间为0，则说明获取锁已经失败了
+        // 申请锁的耗时如果大于等于最大等待时间，则申请锁失败
         if (time <= 0) {
             acquireFailed(threadId);
             return false;
@@ -351,11 +362,16 @@ public class RedissonLock extends RedissonExpirable implements RLock {
 
         // 重新获取当前时间
         current = System.currentTimeMillis();
-        // 基于Redis的发布订阅机制，对该锁发起一个订阅
+        // 5、上面第一次尝试获取锁失败，且还没有超出最大等待时间的基础上，基于Redis的发布订阅机制,订阅锁释放事件
         final RFuture<RedissonLockEntry> subscribeFuture = subscribe(threadId);
-        // 等待，如果在等待时间内订阅的这个锁已经被释放了，则会发起回调然后该线程重新参与争抢锁，await方法返回true。反之则返回false，表示在等待时间内
-        // 订阅的锁并没有释放，所以获取锁失败。
-        // CountDownLatch
+        /*
+         * 6、基于Redis的发布订阅机制,订阅锁释放事件，并通过await方法阻塞等待锁释放，有效的解决了无效的锁申请浪费资源的问题：
+         * 基于信号量，当锁被其它资源占用时，当前线程通过 Redis 的 channel 订阅锁的释放事件，一旦锁释放会发消息通知待等待的线程进行竞争
+         * 当 this.await返回false，说明等待时间已经超出获取锁最大等待时间，取消订阅并返回获取锁失败
+         * 当 this.await返回true，进入下面的循环再次尝试获取锁
+         *
+         * await是通过CountDownLatch + 监听器机制来实现的，具体看方法内部注释
+         */
         if (!await(subscribeFuture, time, TimeUnit.MILLISECONDS)) {
             // 在等待时间耗完的情况下，取消对该锁的订阅
             if (!subscribeFuture.cancel(false)) {
@@ -373,44 +389,62 @@ public class RedissonLock extends RedissonExpirable implements RLock {
             return false;
         }
 
-        // 如果在等待时间内订阅的锁已经被释放了，则会执行这里
+        // 7、如果在等待时间内订阅的锁已经被释放了，则会执行这里
         try {
             // 获取还需要等待的时间
             time -= (System.currentTimeMillis() - current);
+            // 如果还需要等待的时间小于0，则说明已经超过最大等待时间，获取锁失败
             if (time <= 0) {
                 acquireFailed(threadId);
                 return false;
             }
-        
+
+            // 8、能运行到这里则说明：
+            // 1、当前还在最大等待时间内
+            // 2、并且等待的锁已经被释放（即对该锁的订阅事件已经被吊起过），在这里可以再次尝试获取锁
+            // 这是一个死循环，循环退出条件有两个：
+            // ①、在最大等待时间内成功获取锁，返回true
+            // ②、超出了最大等待时间，但仍然没有成功获取到锁，返回false
             while (true) {
+                // 获取当前时间
                 long currentTime = System.currentTimeMillis();
+                // 8.1、再次尝试申请锁，返回还剩余的锁过期时间
                 ttl = tryAcquire(leaseTime, unit, threadId);
+                // 8.2、ttl==null 表示获取锁成功则直接返回true
                 // lock acquired
                 if (ttl == null) {
                     return true;
                 }
 
+                // 再次计算还需要等待多时时间
                 time -= (System.currentTimeMillis() - currentTime);
+                // 8.3、如果还需要等待的时间小于0，则说明已经超过最大等待时间，获取锁失败
                 if (time <= 0) {
                     acquireFailed(threadId);
                     return false;
                 }
 
                 // waiting for message
+                // 更新一下当前时间，因为上面的操作可能会耗时，进而导致下面根据currentTime计算的time不准确
                 currentTime = System.currentTimeMillis();
                 if (ttl >= 0 && ttl < time) {
+                    // 8.4、如果剩余时间(ttl)小于waittime ,就在 ttl 时间内，从Entry的信号量（Semaphore）获取一个许可(除非被中断或者一直没有可用的许可)。
                     getEntry(threadId).getLatch().tryAcquire(ttl, TimeUnit.MILLISECONDS);
                 } else {
+                    // 8.5、如果该锁剩余过期时间(ttl)大于waittime，则就在waittime 时间范围内等待可以通过信号量（Semaphore）
                     getEntry(threadId).getLatch().tryAcquire(time, TimeUnit.MILLISECONDS);
                 }
 
+                // 更新剩余的等待时间(最大等待时间-已经消耗的阻塞时间)
                 time -= (System.currentTimeMillis() - currentTime);
+                // 8.6、如果还需要等待的时间小于0，则说明已经超过最大等待时间，获取锁失败
                 if (time <= 0) {
                     acquireFailed(threadId);
                     return false;
                 }
             }
         } finally {
+            // 9、无论是否获得锁,都要取消订阅解锁消息
             unsubscribe(subscribeFuture, threadId);
         }
 //        return get(tryLockAsync(waitTime, leaseTime, unit));
@@ -545,15 +579,21 @@ public class RedissonLock extends RedissonExpirable implements RLock {
                 Arrays.<Object>asList(getName(), getChannelName()), LockPubSub.unlockMessage, internalLockLeaseTime, getLockName(threadId));
 
     }
-    
+
+    /**
+     * RFuture可以理解为对Future的一个增强，netty中的实现
+     */
     @Override
     public RFuture<Void> unlockAsync(final long threadId) {
         final RPromise<Void> result = new RedissonPromise<Void>();
+        // 具体的释放锁的lua脚本（释放锁的动作在这里完成）
         RFuture<Boolean> future = unlockInnerAsync(threadId);
 
+        // 添加一个监听器，一旦释放锁的操作完成（无论失败或成功），都会吊起监听器的operationComplete方法
         future.addListener(new FutureListener<Boolean>() {
             @Override
             public void operationComplete(Future<Boolean> future) throws Exception {
+                // 如果释放锁失败了
                 if (!future.isSuccess()) {
                     cancelExpirationRenewal(threadId);
                     result.tryFailure(future.cause());
@@ -570,6 +610,8 @@ public class RedissonLock extends RedissonExpirable implements RLock {
                 if (opStatus) {
                     cancelExpirationRenewal(null);
                 }
+
+                // 释放锁成功
                 result.trySuccess(null);
             }
         });

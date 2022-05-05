@@ -134,6 +134,7 @@ import sun.misc.SharedSecrets;
  * @see     TreeMap
  * @see     Hashtable
  * @since   1.2
+ * 为什么HashMap既继承了AbstractMap又重新去实现Map接口？？？AbstractMap已经实现了map接口？这是设计上的错误还是有什么其他妙用呢？？？暂时没有看到有什么妙用
  */
 public class HashMap<K,V> extends AbstractMap<K,V>
     implements Map<K,V>, Cloneable, Serializable {
@@ -275,6 +276,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
      * Should be at least 4 * TREEIFY_THRESHOLD to avoid conflicts
      * between resizing and treeification thresholds.
      * 默认树化阈值（hashmap中数据总数达到64个），和上面的 TREEIFY_THRESHOLD 一起控制树化条件
+     * 也就是说当数据总数量达到64个并且链表长度大于8时才会进行树化，如果链表长度大于8但是数据量没有达到64，则会先进行扩容
      */
     static final int MIN_TREEIFY_CAPACITY = 64;
 
@@ -283,6 +285,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
      * TreeNode subclass, and in LinkedHashMap for its Entry subclass.)
      */
     static class Node<K,V> implements Map.Entry<K,V> {
+        // hash和key都是final的不可修改
         final int hash;
         final K key;
         V value;
@@ -300,6 +303,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
         public final String toString() { return key + "=" + value; }
 
         public final int hashCode() {
+            // 该node的hashcode为 key的hashcode 异或 value的 hashcode
             return Objects.hashCode(key) ^ Objects.hashCode(value);
         }
 
@@ -342,12 +346,14 @@ public class HashMap<K,V> extends AbstractMap<K,V>
      */
     static final int hash(Object key) {
         int h;
+        // key的hash值右移16位，然后异或自身，得到最终的hash值
         return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
     }
 
     /**
      * Returns x's Class if it is of the form "class C implements
      * Comparable<C>", else null.
+     * 判断当前的x是否实现了Comparable接口，如果是则返回他的class，反之则返回null
      */
     static Class<?> comparableClassFor(Object x) {
         if (x instanceof Comparable) {
@@ -381,6 +387,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
     /**
      * Returns a power of two size for the given target capacity.
      * 作用：返回一个大于等于当前传入的cap值的数字，并且该数字一定是2的次方数
+     * 也就是取第一个比cap大的并且是2的次方的数
      */
     static final int tableSizeFor(int cap) {
         int n = cap - 1;
@@ -434,7 +441,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
     // Additionally, if the table array has not been allocated, this
     // field holds the initial array capacity, or zero signifying
     // DEFAULT_INITIAL_CAPACITY.)
-    // 扩容阈值，当hash表中的元素超过阈值时触发扩容
+    // 扩容阈值，当hash表中的元素超过阈值时触发扩容（该值只与扩容有关，他的大小不会限制其他操作）
     int threshold;
 
     /**
@@ -522,8 +529,10 @@ public class HashMap<K,V> extends AbstractMap<K,V>
                 if (t > threshold)
                     threshold = tableSizeFor(t);
             }
+            // s大于扩容阈值，则进行扩容
             else if (s > threshold)
                 resize();
+            // 循环将m中的元素put到map中
             for (Map.Entry<? extends K, ? extends V> e : m.entrySet()) {
                 K key = e.getKey();
                 V value = e.getValue();
@@ -580,19 +589,26 @@ public class HashMap<K,V> extends AbstractMap<K,V>
      * @return the node, or null if none
      */
     final Node<K,V> getNode(int hash, Object key) {
+        // tab表示数组，first表示链表的头节点，
         Node<K,V>[] tab; Node<K,V> first, e; int n; K k;
         if ((tab = table) != null && (n = tab.length) > 0 &&
+                //（n - 1) & hash 表示定位到该key在table中的数组下标
             (first = tab[(n - 1) & hash]) != null) {
+            // first节点是否等于当前要查找的key，若是则直接返回该节点
             if (first.hash == hash && // always check first node
                 ((k = first.key) == key || (key != null && key.equals(k))))
                 return first;
+            // 如果first不等于 key，那么就找到first的下一个e
             if ((e = first.next) != null) {
+                // 是否是树，如果是树节点那么就在树上查找，否则就顺着链表一直往后找，直到链表最后一个节点
                 if (first instanceof TreeNode)
                     return ((TreeNode<K,V>)first).getTreeNode(hash, key);
                 do {
+                    // 节点的hash值要等于hash,并且key要==e.key
                     if (e.hash == hash &&
                         ((k = e.key) == key || (key != null && key.equals(k))))
                         return e;
+                    // 继续找下一个节点
                 } while ((e = e.next) != null);
             }
         }
@@ -645,10 +661,11 @@ public class HashMap<K,V> extends AbstractMap<K,V>
         // i 表示路由寻址 结果
         //
         Node<K,V>[] tab; Node<K,V> p; int n, i;
-        // 延迟初始化
+        // 如果table是空或者length==0，则说明table中还没有数据，则就先进行一次扩容
         if ((tab = table) == null || (n = tab.length) == 0)
             n = (tab = resize()).length;
         // 找到该key对应在hash表上的位置，如果该位置还没有node节点。则直接放在该位置即可
+        // (n - 1) & hash 表示定位key在table中的桶位置
         if ((p = tab[i = (n - 1) & hash]) == null)
             tab[i] = newNode(hash, key, value, null);
         else {
@@ -659,6 +676,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
                 e = p;
             // 该节点后的链表已经被树化
             else if (p instanceof TreeNode)
+                // 添加到树上
                 e = ((TreeNode<K,V>)p).putTreeVal(this, tab, hash, key, value);
             // 该节点后面是链表
             else {
@@ -668,7 +686,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
                     if ((e = p.next) == null) {
                         // 插入
                         p.next = newNode(hash, key, value, null);
-                        // 链表长度达到树化阈值，则进行树化
+                        // 链表长度达到树化阈值，则进行树化（也就是添加元素后链表长度大于等于8，则进行树化）
                         if (binCount >= TREEIFY_THRESHOLD - 1) // -1 for 1st
                             treeifyBin(tab, hash);
                         break;
@@ -688,7 +706,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
                 // 找到了key相同的节点，则根据 onlyIfAbsent 决定是否替换该节点的value值
                 if (!onlyIfAbsent || oldValue == null)
                     e.value = value;
-                // 这是一个空方法
+                // 这是一个空方法（主要是留给linkedHashMap用）
                 afterNodeAccess(e);
                 // 这直接返回旧值，不会执行下面的 ++modCount; 了
                 return oldValue;
@@ -696,7 +714,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
         }
         // 被修改次数++，替换node节点的value操作不算mod
         ++modCount;
-        // 如果hashmap中的元素个数达到了扩容阈值，则进行扩容
+        // 如果hashmap中的元素个数达到了扩容阈值，则进行扩容（hashmap的流程是：先添加在判断是否要扩容）
         if (++size > threshold)
             resize();
         // 空方法
@@ -724,7 +742,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
         int newCap, newThr = 0;
 
         if (oldCap > 0) {
-            // 超过最大容量，不能再扩容了
+            // 超过最大容量，不能再扩容了，则放弃扩容了
             if (oldCap >= MAXIMUM_CAPACITY) {
                 threshold = Integer.MAX_VALUE;
                 // 直接返回旧的hash表的引用
@@ -765,15 +783,20 @@ public class HashMap<K,V> extends AbstractMap<K,V>
         Node<K,V>[] newTab = (Node<K,V>[])new Node[newCap];
         table = newTab;
         if (oldTab != null) {
+            // 遍历旧的table
             for (int j = 0; j < oldCap; ++j) {
                 Node<K,V> e;
+                // 获取到旧table的j位置上的元素节点
                 if ((e = oldTab[j]) != null) {
+                    // help gc
                     oldTab[j] = null;
                     // 新数组的第一个位置还没有元素的情况
                     if (e.next == null)
+                        // e.hash & (newCap - 1)表示定位e元素在新table中的位置
                         newTab[e.hash & (newCap - 1)] = e;
                     // 树化的情况
                     else if (e instanceof TreeNode)
+                        // 拆分树，如果map扩容，我们的树肯定会被拆掉，性能消耗
                         ((TreeNode<K,V>)e).split(this, newTab, j, oldCap);
                     // 链表的情况
                     else { // preserve order
@@ -785,19 +808,23 @@ public class HashMap<K,V> extends AbstractMap<K,V>
                         do {
                             next = e.next;
                             // 低位链表
+                            // 如果 (e.hash & oldCap) == 0 成立，则位置不变
                             if ((e.hash & oldCap) == 0) {
+                                // 第一个节点时该if成立
                                 if (loTail == null)
                                     loHead = e;
                                 else
-                                    loTail.next = e;
+                                    loTail.next = e; // 尾插法
                                 loTail = e;
                             }
                             // 高位链表
+                            // (e.hash & oldCap) == 0 不成立，则这个节点应该放到扩容后的新位置
                             else {
+                                // 第一个节点时该if成立
                                 if (hiTail == null)
                                     hiHead = e;
                                 else
-                                    hiTail.next = e;
+                                    hiTail.next = e; // 尾插法
                                 hiTail = e;
                             }
                         } while ((e = next) != null);

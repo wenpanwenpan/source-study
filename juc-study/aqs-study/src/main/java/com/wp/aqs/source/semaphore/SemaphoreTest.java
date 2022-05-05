@@ -3,9 +3,9 @@ package com.wp.aqs.source.semaphore;
 import java.util.concurrent.Semaphore;
 
 /**
- * @description:
- * @author: panfeng.wen@hand-china
- * @create: 2021/06/17 11:27
+ *
+ * @author wenpan
+ *  @create  2021/06/17 11:27
  */
 public class SemaphoreTest {
 

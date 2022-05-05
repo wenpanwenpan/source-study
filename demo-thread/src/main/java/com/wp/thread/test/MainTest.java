@@ -4,8 +4,8 @@ import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 
 /**
- * @description:
- * @author: 文攀 Mr_wenpan@163.com
+ *
+ *  @author  文攀 Mr_wenpan@163.com
  * @date: 2020-12-07 16:36
  **/
 public class MainTest {

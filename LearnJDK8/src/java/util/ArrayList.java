@@ -115,7 +115,7 @@ public class ArrayList<E> extends AbstractList<E>
     private static final int DEFAULT_CAPACITY = 10;
 
     /**
-     * Shared empty array instance used for empty instances.
+     * Shared empty array instance used for empty instances.注意区分和下面的DEFAULTCAPACITY_EMPTY_ELEMENTDATA的区别
      */
     private static final Object[] EMPTY_ELEMENTDATA = {};
 
@@ -131,6 +131,7 @@ public class ArrayList<E> extends AbstractList<E>
      * The capacity of the ArrayList is the length of this array buffer. Any
      * empty ArrayList with elementData == DEFAULTCAPACITY_EMPTY_ELEMENTDATA
      * will be expanded to DEFAULT_CAPACITY when the first element is added.
+     * transient关键词是用来防止序列化的（用transient修饰的变量都不能进行序列化）
      */
     transient Object[] elementData; // non-private to simplify nested class access
 
@@ -220,7 +221,9 @@ public class ArrayList<E> extends AbstractList<E>
         }
     }
 
+    // 计算容量
     private static int calculateCapacity(Object[] elementData, int minCapacity) {
+        // elementData 是否等于 DEFAULTCAPACITY_EMPTY_ELEMENTDATA 注意ArrayList中有两个{}对象 EMPTY_ELEMENTDATA 和 DEFAULTCAPACITY_EMPTY_ELEMENTDATA
         if (elementData == DEFAULTCAPACITY_EMPTY_ELEMENTDATA) {
             return Math.max(DEFAULT_CAPACITY, minCapacity);
         }
@@ -236,6 +239,7 @@ public class ArrayList<E> extends AbstractList<E>
 
         // overflow-conscious code
         if (minCapacity - elementData.length > 0)
+            // 扩容
             grow(minCapacity);
     }
 
@@ -256,9 +260,11 @@ public class ArrayList<E> extends AbstractList<E>
     private void grow(int minCapacity) {
         // overflow-conscious code
         int oldCapacity = elementData.length;
+        // 新容量 = 老容量 + 0.5倍老容量
         int newCapacity = oldCapacity + (oldCapacity >> 1);
         if (newCapacity - minCapacity < 0)
             newCapacity = minCapacity;
+        // 如果新容量太大了
         if (newCapacity - MAX_ARRAY_SIZE > 0)
             newCapacity = hugeCapacity(minCapacity);
         // minCapacity is usually close to size, so this is a win:
@@ -346,7 +352,7 @@ public class ArrayList<E> extends AbstractList<E>
 
     /**
      * Returns a shallow copy of this <tt>ArrayList</tt> instance.  (The
-     * elements themselves are not copied.)
+     * elements themselves are not copied.) 浅拷贝
      *
      * @return a clone of this <tt>ArrayList</tt> instance
      */
@@ -430,6 +436,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
     public E get(int index) {
+        // 范围检查
         rangeCheck(index);
 
         return elementData(index);
@@ -477,8 +484,10 @@ public class ArrayList<E> extends AbstractList<E>
         rangeCheckForAdd(index);
 
         ensureCapacityInternal(size + 1);  // Increments modCount!!
+        // 向后移动index后面的所有元素一个单位
         System.arraycopy(elementData, index, elementData, index + 1,
                          size - index);
+        // 新元素插入到index位置
         elementData[index] = element;
         size++;
     }
@@ -497,9 +506,10 @@ public class ArrayList<E> extends AbstractList<E>
 
         modCount++;
         E oldValue = elementData(index);
-
+        // 是不是删除的中间元素
         int numMoved = size - index - 1;
         if (numMoved > 0)
+            // 将index后的所有元素都向前移动一个单位（这里会进行一次拷贝）
             System.arraycopy(elementData, index+1, elementData, index,
                              numMoved);
         elementData[--size] = null; // clear to let GC do its work
@@ -521,6 +531,7 @@ public class ArrayList<E> extends AbstractList<E>
      * @return <tt>true</tt> if this list contained the specified element
      */
     public boolean remove(Object o) {
+        // 遍历找到该元素
         if (o == null) {
             for (int index = 0; index < size; index++)
                 if (elementData[index] == null) {
@@ -543,7 +554,9 @@ public class ArrayList<E> extends AbstractList<E>
      */
     private void fastRemove(int index) {
         modCount++;
+        // 是不是删除的中间元素
         int numMoved = size - index - 1;
+        // 如果大于0则说明是删除的中间元素
         if (numMoved > 0)
             System.arraycopy(elementData, index+1, elementData, index,
                              numMoved);
@@ -583,6 +596,7 @@ public class ArrayList<E> extends AbstractList<E>
         ensureCapacityInternal(size + numNew);  // Increments modCount
         System.arraycopy(a, 0, elementData, size, numNew);
         size += numNew;
+        // 慎用addAll的返回值做判断
         return numNew != 0;
     }
 
@@ -608,8 +622,10 @@ public class ArrayList<E> extends AbstractList<E>
         int numNew = a.length;
         ensureCapacityInternal(size + numNew);  // Increments modCount
 
+        // 是否在中间添加
         int numMoved = size - index;
         if (numMoved > 0)
+            // 将index后面的元素向后移动
             System.arraycopy(elementData, index, elementData, index + numNew,
                              numMoved);
 
@@ -720,7 +736,10 @@ public class ArrayList<E> extends AbstractList<E>
         int r = 0, w = 0;
         boolean modified = false;
         try {
+            // 遍历elementData数组
             for (; r < size; r++)
+                // 如果c中存在elementData[r]并且complement=true，则将elementData[r]记录
+                // 如果c中存不在elementData[r]并且complement=false，则将elementData[r]记录
                 if (c.contains(elementData[r]) == complement)
                     elementData[w++] = elementData[r];
         } finally {
@@ -758,14 +777,14 @@ public class ArrayList<E> extends AbstractList<E>
         int expectedModCount = modCount;
         s.defaultWriteObject();
 
-        // Write out size as capacity for behavioural compatibility with clone()
+        // Write out size as capacity for behavioural compatibility with clone() 先写入元素的个数
         s.writeInt(size);
 
         // Write out all elements in the proper order.
         for (int i=0; i<size; i++) {
             s.writeObject(elementData[i]);
         }
-
+        // 如果在序列化期间，有其他线程修改了该list集合的元素，则抛出并发修改异常
         if (modCount != expectedModCount) {
             throw new ConcurrentModificationException();
         }
@@ -782,18 +801,20 @@ public class ArrayList<E> extends AbstractList<E>
         // Read in size, and any hidden stuff
         s.defaultReadObject();
 
-        // Read in capacity
+        // Read in capacity 先读取元素的个数（上面的writeObject对应写入的）
         s.readInt(); // ignored
 
         if (size > 0) {
             // be like clone(), allocate array based upon size not capacity
             int capacity = calculateCapacity(elementData, size);
             SharedSecrets.getJavaOISAccess().checkArray(s, Object[].class, capacity);
+            // 确认容量够用，这里有可能会扩容
             ensureCapacityInternal(size);
 
             Object[] a = elementData;
             // Read in all elements in the proper order.
             for (int i=0; i<size; i++) {
+                // 从输入流中的数据读取到数组中
                 a[i] = s.readObject();
             }
         }

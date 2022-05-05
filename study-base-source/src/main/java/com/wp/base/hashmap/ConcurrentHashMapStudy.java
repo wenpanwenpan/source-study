@@ -6,9 +6,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingDeque;
 
 /**
- * @description:
- * @author: panfeng.wen@hand-china
- * @create: 2021/06/19 15:49
+ *
+ * @author wenpan
+ *  @create  2021/06/19 15:49
  */
 public class ConcurrentHashMapStudy {
 

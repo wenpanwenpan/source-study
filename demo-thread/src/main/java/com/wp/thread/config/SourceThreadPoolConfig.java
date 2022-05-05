@@ -8,8 +8,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
 
 /**
- * @description: source线程池配置
- * @author: 文攀 Mr_wenpan@163.com
+ *   source线程池配置
+ *  @author  文攀 Mr_wenpan@163.com
  * @date: 2020-12-03 17:30
  **/
 @Configuration

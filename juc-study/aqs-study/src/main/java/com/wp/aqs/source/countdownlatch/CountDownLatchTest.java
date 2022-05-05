@@ -3,9 +3,9 @@ package com.wp.aqs.source.countdownlatch;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * @description:
- * @author: panfeng.wen@hand-china
- * @create: 2021/06/17 14:11
+ *
+ * @author wenpan
+ *  @create  2021/06/17 14:11
  */
 public class CountDownLatchTest {
 

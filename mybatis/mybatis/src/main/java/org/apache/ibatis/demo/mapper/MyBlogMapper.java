@@ -3,8 +3,8 @@ package org.apache.ibatis.demo.mapper;
 import org.apache.ibatis.demo.entity.Blog;
 
 /**
- * @description:
- * @author: 文攀 Mr_wenpan@163.com
+ *
+ *  @author  文攀 Mr_wenpan@163.com
  * @date: 2020-10-18 12:30
  **/
 public interface MyBlogMapper {

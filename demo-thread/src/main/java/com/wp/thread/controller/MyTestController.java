@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * @description:
- * @author: 文攀 Mr_wenpan@163.com
+ *
+ *  @author  文攀 Mr_wenpan@163.com
  * @date: 2020-12-03 22:13
  **/
 @RestController("MyTestController.v1")

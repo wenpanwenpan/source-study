@@ -6,8 +6,8 @@ import com.wp.thread.service.BlogInsertService2;
 import org.springframework.stereotype.Service;
 
 /**
- * @description:
- * @author: 文攀 Mr_wenpan@163.com
+ *
+ *  @author  文攀 Mr_wenpan@163.com
  * @date: 2020-12-02 19:40
  **/
 @Service

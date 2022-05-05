@@ -5,9 +5,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.LongAdder;
 
 /**
- * @description: LongAdapter学习
- * @author: panfeng.wen@hand-china
- * @create: 2021/04/19 22:33
+ *   LongAdapter学习
+ * @author wenpan
+ *  @create  2021/04/19 22:33
  */
 public class LongAdapterStudy {
 

@@ -6,9 +6,9 @@ import org.testcontainers.shaded.com.google.common.util.concurrent.ThreadFactory
 import java.util.concurrent.*;
 
 /**
- * @description: FutureTask源码学习测试
- * @author: panfeng.wen@hand-china
- * @create: 2021/04/17 21:34
+ *   FutureTask源码学习测试
+ * @author wenpan
+ *  @create  2021/04/17 21:34
  */
 public class FutureTaskSourceStudy {
 

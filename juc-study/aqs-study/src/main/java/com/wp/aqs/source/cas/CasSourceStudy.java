@@ -4,10 +4,10 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @description: cas原理
+ *   cas原理
  * 模拟100个人每个人访问一个网站10次，使用一个变量 Count 来记录网站被访问的总次数，每访问一次就将访问次数加一
- * @author: panfeng.wen@hand-china
- * @create: 2021/04/18 15:46
+ * @author wenpan
+ *  @create  2021/04/18 15:46
  */
 public class CasSourceStudy {
 
@@ -46,7 +46,7 @@ public class CasSourceStudy {
      * 该方法会有多线程安全问题
      * @return: void
      * @date: 2021/4/18 4:11 下午
-     * @auther: panfeng.wen@hand-china.com
+     * @auther wenpan.com
      */
     public static synchronized void request() throws InterruptedException {
         /**
@@ -64,7 +64,7 @@ public class CasSourceStudy {
      * 手动模拟CAS
      * @return: void
      * @date: 2021/4/19 10:51 上午
-     * @auther: panfeng.wen@hand-china.com
+     * @auther wenpan.com
      */
     public static void request2() throws InterruptedException {
         TimeUnit.MICROSECONDS.sleep(5);
@@ -77,7 +77,7 @@ public class CasSourceStudy {
      * 自己实现的cas
      * @param expectValue 期待的值
      * @param newValue 要更新的值
-     * @auther: panfeng.wen@hand-china.com
+     * @auther wenpan.com
      */
     public static synchronized boolean compareAndSwap(int expectValue, int newValue){
         // 只有 expectValue = 原来的值的时候采取更新 COUNT ，否则直接返回false

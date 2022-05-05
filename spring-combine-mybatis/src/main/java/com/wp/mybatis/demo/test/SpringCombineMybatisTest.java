@@ -12,8 +12,8 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * @description: Spring整合Mybatis测试
- * @author: 文攀 Mr_wenpan@163.com
+ *   Spring整合Mybatis测试
+ *  @author  文攀 Mr_wenpan@163.com
  * @date: 2020-10-22 11:46
  **/
 public class SpringCombineMybatisTest {

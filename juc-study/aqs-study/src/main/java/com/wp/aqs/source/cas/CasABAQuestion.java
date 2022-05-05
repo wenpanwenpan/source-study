@@ -6,9 +6,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * @description: CAS的ABA问题
- * @author: panfeng.wen@hand-china
- * @create: 2021/04/18 17:06
+ *   CAS的ABA问题
+ * @author wenpan
+ *  @create  2021/04/18 17:06
  */
 public class CasABAQuestion {
 

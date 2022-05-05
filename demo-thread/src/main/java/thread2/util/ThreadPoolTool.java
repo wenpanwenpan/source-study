@@ -17,8 +17,8 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
- * @description:
- * @author: 文攀 Mr_wenpan@163.com
+ *
+ *  @author  文攀 Mr_wenpan@163.com
  * @date: 2020-12-06 22:40
  **/
 public class ThreadPoolTool {

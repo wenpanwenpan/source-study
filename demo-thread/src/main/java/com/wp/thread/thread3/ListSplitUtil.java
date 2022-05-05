@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @description: List集合拆分工具
- * @author: 文攀 Mr_wenpan@163.com
+ *   List集合拆分工具
+ *  @author  文攀 Mr_wenpan@163.com
  * @date: 2020-12-03 17:22
  **/
 public class ListSplitUtil {

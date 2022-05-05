@@ -177,7 +177,7 @@ public class Semaphore implements java.io.Serializable {
         /**
          * @param acquires 要获取的许可数量
          * @date: 2021/6/17 11:30 上午
-         * @author: Mr_wenpan@163.com
+         *  @author  Mr_wenpan@163.com
          */
         final int nonfairTryAcquireShared(int acquires) {
             for (;;) {

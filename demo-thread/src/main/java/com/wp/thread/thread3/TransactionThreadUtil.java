@@ -22,8 +22,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 /**
- * @description: 带事务的多线程工具类
- * @author: 文攀 Mr_wenpan@163.com
+ *   带事务的多线程工具类
+ *  @author  文攀 Mr_wenpan@163.com
  * @date: 2020-12-07 13:48
  **/
 public class TransactionThreadUtil {

@@ -6,9 +6,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicStampedReference;
 
 /**
- * @description: CAS的ABA问题解决
- * @author: panfeng.wen@hand-china
- * @create: 2021/04/18 17:20
+ *   CAS的ABA问题解决
+ * @author wenpan
+ *  @create  2021/04/18 17:20
  */
 public class CasABAQuestionSolve {
 
